@@ -1,6 +1,6 @@
 import re
 
-from django.forms.fields import email_re
+from django.core.validators import email_re
 from django.forms import CharField, Textarea, ValidationError
 from django.utils.translation import ugettext as _
 
