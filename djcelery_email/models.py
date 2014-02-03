@@ -5,20 +5,21 @@ from fields import EmailsListField
 
 
 class EMail(models.Model):
-    def __init__(self, message):
+    def __init__(self, message=None):
         super(EMail, self).__init__()
 
-        self.subject = message.subject
-        self.body = message.body
+        if message:
+            self.subject = message.subject
+            self.body = message.body
 
-        self.to_emails = message.to
-        self.cc_emails = message.cc
-        self.bcc_emails = message.bcc
+            self.to_emails = message.to
+            self.cc_emails = message.cc
+            self.bcc_emails = message.bcc
 
-        self.from_email = message.from_email
+            self.from_email = message.from_email
 
-        for alt in message.alternatives:
-            EMailAlternative(self, **alt).save()
+            for alt in message.alternatives:
+                EMailAlternative(self, **alt).save()
 
     def message(self):
         m = EmailMultiAlternatives(self.subject, self.body)
@@ -56,11 +57,11 @@ class EMail(models.Model):
 # Long term plan
 
 class EMailAlternative(models.Model):
-    def __init__(self, message, content, mime_type):
+    def __init__(self, **info):#message, content, mime_type):
         super(EMail, self).__init__()
-        self.message = message
-        self.content = content
-        self.mimetype = mime_type
+        self.message = info[0]
+        self.content = info[1]
+        self.mimetype = info[2]
 
     message = models.ForeignKey(EMail)
 
