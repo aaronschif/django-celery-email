@@ -1,5 +1,5 @@
 from django.core.mail.backends.base import BaseEmailBackend
-from django.core.mail.backends.filebased EmailBackend
+from django.core.mail.backends.filebased import EmailBackend
 
 from djcelery_email.tasks import send_email
 
