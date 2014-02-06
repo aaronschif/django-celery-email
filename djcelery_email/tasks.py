@@ -3,33 +3,38 @@ from django.core.mail import get_connection
 
 from celery.task import task
 
+from djcelery_email.models import EMail
 
-CONFIG = getattr(settings, 'CELERY_EMAIL_TASK_CONFIG', {})
+
 BACKEND = getattr(settings, 'CELERY_EMAIL_BACKEND',
                   'django.core.mail.backends.smtp.EmailBackend')
-TASK_CONFIG = {
-    'name': 'djcelery_email_send',
-    'ignore_result': True,
-}
-TASK_CONFIG.update(CONFIG)
+
+# CONFIG = getattr(settings, 'CELERY_EMAIL_TASK_CONFIG', {})
+# TASK_CONFIG = {
+#     'name': 'djcelery_email_send',
+#     'ignore_result': False,
+# }
+# TASK_CONFIG.update(CONFIG)
 
 
-@task(**TASK_CONFIG)
-def send_email(message, **kwargs):
-    logger = send_email.get_logger()
-    conn = get_connection(backend=BACKEND,
-                          **kwargs.pop('_backend_init_kwargs', {}))
+# @task(**TASK_CONFIG)
+
+
+@task()
+def send_emails():
+    conn = get_connection(backend=BACKEND)
+
     try:
-        result = conn.send_messages([message])
-        logger.debug("Successfully sent email message to %r.", message.to)
-        return result
-    except Exception as e:
-        # catching all exceptions b/c it could be any number of things
-        # depending on the backend
-        logger.warning("Failed to send email message to %r, retrying.",
-                       message.to)
-        send_email.retry(exc=e)
+        conn.open()
+        emails = EMail.objects.filter(sent=False)[:5]
 
+        for email in emails:
+            email.send(connection=conn)
 
-# backwards compat
-SendEmailTask = send_email
+    finally:
+        conn.close()
+
+@task()
+def clean_old():
+    pass
+    # EMail.objects.filter()

@@ -1,12 +1,17 @@
 from django.db import models
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, get_connection
+from django.conf import settings
 
 from fields import EmailsListField
 
 
+BACKEND = getattr(settings, 'CELERY_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+
+
 class EMail(models.Model):
-    def __init__(self, message=None):
-        super(EMail, self).__init__()
+    def __init__(self, *args, **kwargs):
+        message = kwargs.pop('message', None)
+        result = super(EMail, self).__init__(*args, **kwargs)
 
         if message:
             self.subject = message.subject
@@ -18,8 +23,19 @@ class EMail(models.Model):
 
             self.from_email = message.from_email
 
-            for alt in message.alternatives:
-                EMailAlternative(self, **alt).save()
+            self.save()
+
+            for c in message.alternatives:
+                alt = EMailAlternative()
+                alt.message = self
+                alt.content = c[0]
+                alt.mimetype = c[1]
+                alt.save()
+
+        return result
+
+    def __unicode__(self):
+        return "{m.subject} <From: {m.from_email}> To: {m.to_emails}".format(m=self)
 
     def message(self):
         m = EmailMultiAlternatives(self.subject, self.body)
@@ -28,9 +44,18 @@ class EMail(models.Model):
         m.bcc = self.bcc_emails
         m.from_email = self.from_email
 
-        m.alternatives = [(att.content, att.mimetype) for att in self.attachments()]
+        m.alternatives = [(att.content, att.mimetype) for att in self.alternatives()]
 
         #m.extra_headers = self.headers
+
+        return m
+
+    def send(self, connection=None):
+        if not connection:
+            connection = get_connection(backend=BACKEND)
+        connection.send_messages([self.message()])
+        self.sent = True
+        self.save()
 
     def attachments(self):
         raise NotImplemented()
@@ -42,8 +67,8 @@ class EMail(models.Model):
     body = models.TextField()
 
     to_emails = EmailsListField()
-    cc_emails = EmailsListField()
-    bcc_emails = EmailsListField()
+    cc_emails = EmailsListField(blank=True)
+    bcc_emails = EmailsListField(blank=True)
 
     from_email = models.EmailField()
 
@@ -52,21 +77,19 @@ class EMail(models.Model):
     # connection = None
 
     sent = models.BooleanField()
+    queued = models.DateField(auto_now=True)
 
 
 # Long term plan
 
 class EMailAlternative(models.Model):
-    def __init__(self, **info):#message, content, mime_type):
-        super(EMail, self).__init__()
-        self.message = info[0]
-        self.content = info[1]
-        self.mimetype = info[2]
+    def __init__(self, *args, **kwargs):#message, content, mime_type):
+        super(EMailAlternative, self).__init__(*args, **kwargs)
 
     message = models.ForeignKey(EMail)
 
-    content = None
-    mimetype = None
+    content = models.TextField()
+    mimetype = models.CharField(max_length=200, default= 'text/html')
 
 
 # class EMailAttachment(models.Model):
