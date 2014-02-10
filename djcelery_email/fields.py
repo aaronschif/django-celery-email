@@ -2,9 +2,13 @@ import re
 import six
 
 from django.core.validators import validate_email
-from django.core.exceptions import ValidationError
 from django.db.models import TextField, SubfieldBase
 from django.utils.translation import ugettext as _
+from django.forms import Field
+
+
+class EmailsFormField(Field):
+    pass
 
 
 class EmailsListField(TextField):
@@ -20,9 +24,8 @@ class EmailsListField(TextField):
     def validate(self, value, model_instance):
         super(EmailsListField, self).validate(value, model_instance)
 
-        if self.blank and not value:
-            for email in value:
-                validate_email(email)
+        for email in value:
+            validate_email(email)
 
     def get_prep_value(self, value):
         if isinstance(value, six.string_types):
@@ -30,6 +33,7 @@ class EmailsListField(TextField):
         else:
             return ', '.join(value)
 
-    def value_to_string(self, obj):
-        value = self._get_val_from_obj(obj)
-        return self.get_db_prep_value(value)
+    def formfield(self, **kwargs):
+        defaults = {'form_class': EmailsFormField}
+        defaults.update(kwargs)
+        return super(EmailsListField, self).formfield(**defaults)

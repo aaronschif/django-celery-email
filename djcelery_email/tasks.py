@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.mail import get_connection
 
-from celery.task import task
+from celery import shared_task
 
 from djcelery_email.models import EMail
 
@@ -20,7 +20,7 @@ BACKEND = getattr(settings, 'CELERY_EMAIL_BACKEND',
 # @task(**TASK_CONFIG)
 
 
-@task()
+@shared_task()
 def send_emails():
     conn = get_connection(backend=BACKEND)
 
@@ -34,7 +34,7 @@ def send_emails():
     finally:
         conn.close()
 
-@task()
+@shared_task()
 def clean_old():
     pass
     # EMail.objects.filter()
