@@ -30,7 +30,7 @@ class EMail(models.Model):
                     alt.save()
 
     def __unicode__(self):
-        return "{m.subject} <From: {m.from_email}> To: {m.to_emails}".format(m=self)
+        return "<'{m.subject}' From: {m.from_email} To: {m.to_emails}>".format(m=self)
 
     def message(self):
         m = EmailMultiAlternatives(self.subject, self.body)
@@ -77,20 +77,16 @@ class EMail(models.Model):
     queued = models.DateField(auto_now=True)
 
 
-# Long term plan
-
 class EMailAlternative(models.Model):
-    def __init__(self, *args, **kwargs):#message, content, mime_type):
-        super(EMailAlternative, self).__init__(*args, **kwargs)
-
     message = models.ForeignKey(EMail)
 
     content = models.TextField()
-    mimetype = models.CharField(max_length=200, default= 'text/html')
+    mimetype = models.CharField(max_length=200, default='text/html')
+
 
 # class EMailAttachment(models.Model):
 #     message = models.ForeignKey(EMail)
 #
-#     filename = None
-#     content = None
-#     mimetype = None
+#     filename = models.CharField(max_length=200)
+#     content = models.FileField()
+#     mimetype = models.CharField(max_length=200)
