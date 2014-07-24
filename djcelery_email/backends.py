@@ -3,10 +3,6 @@ from django.core.mail.backends.base import BaseEmailBackend
 from djcelery_email import tasks
 from djcelery_email.models import EMail
 
-from logging import getLogger
-
-log = getLogger(__name__)
-
 
 class CeleryEmailBackend(BaseEmailBackend):
     def __init__(self, fail_silently=False, **kwargs):

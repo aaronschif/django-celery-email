@@ -49,7 +49,6 @@ class EMail(models.Model):
         if not connection:
             connection = get_connection(
                 backend=getattr(settings, 'CELERY_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend'))
-        print connection
         connection.send_messages([self.message()])
         self.sent = True
         self.save()
