@@ -1,5 +1,5 @@
 import pytest
-from django.core.mail import EmailMultiAlternatives, EmailMessage, get_connection
+from django.core.mail import get_connection
 from django.core import mail
 
 from djcelery_email.backends import CeleryEmailBackend
@@ -24,10 +24,14 @@ def test_simple_email(email):
     assert len(mail.outbox) == 1
 
 @pytest.mark.django_db
+def test_unicode(email):
+    e_mail = EMail(message=email)
+    assert unicode(e_mail)
+
+@pytest.mark.django_db
 def test_simple_backend(email):
     email.send()
 
-    assert EMail.objects.count() == 1
     assert EMail.objects.count() == 1
 
 

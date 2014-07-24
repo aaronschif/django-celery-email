@@ -7,18 +7,37 @@ from djcelery_email.models import EMail
 
 
 @shared_task()
-def send_emails():
+def send_email_batch(batch_size=None):
+
     conn = get_connection(
         backend=getattr(settings, 'CELERY_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend'))
     try:
         conn.open()
-        emails = EMail.objects.filter(sent=False)[:5]
+        if batch_size:
+            emails = EMail.objects.filter(sent=False)[:batch_size]
+        else:
+            emails = EMail.objects.filter(sent=False)
 
         for email in emails:
             email.send(connection=conn)
 
     finally:
         conn.close()
+
+@shared_task()
+def send_emails(ids):
+    conn = get_connection(
+        backend=getattr(settings, 'CELERY_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend'))
+    emails = [email for email in EMail.objects.filter(id__in=ids)]
+
+    try:
+        conn.open()
+        for email in emails:
+            email.send(connection=conn)
+
+    finally:
+        conn.close()
+
 
 @shared_task()
 def clean_old():
