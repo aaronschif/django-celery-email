@@ -27,6 +27,7 @@ pip-log.txt
 .coverage
 .tox
 nosetests.xml
+/var
 
 # Translations
 *.mo
@@ -35,3 +36,4 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+*.sqlite3

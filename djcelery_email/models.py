@@ -5,13 +5,10 @@ from django.conf import settings
 from fields import EmailsListField
 
 
-BACKEND = getattr(settings, 'CELERY_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
-
-
 class EMail(models.Model):
     def __init__(self, *args, **kwargs):
         message = kwargs.pop('message', None)
-        result = super(EMail, self).__init__(*args, **kwargs)
+        super(EMail, self).__init__(*args, **kwargs)
 
         if message:
             self.subject = message.subject
@@ -24,15 +21,13 @@ class EMail(models.Model):
             self.from_email = message.from_email
 
             self.save()
-
-            for c in message.alternatives:
-                alt = EMailAlternative()
-                alt.message = self
-                alt.content = c[0]
-                alt.mimetype = c[1]
-                alt.save()
-
-        return result
+            if hasattr(message, 'alternatives'):
+                for c in message.alternatives:
+                    alt = EMailAlternative()
+                    alt.message = self
+                    alt.content = c[0]
+                    alt.mimetype = c[1]
+                    alt.save()
 
     def __unicode__(self):
         return "{m.subject} <From: {m.from_email}> To: {m.to_emails}".format(m=self)
@@ -52,7 +47,9 @@ class EMail(models.Model):
 
     def send(self, connection=None):
         if not connection:
-            connection = get_connection(backend=BACKEND)
+            connection = get_connection(
+                backend=getattr(settings, 'CELERY_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend'))
+        print connection
         connection.send_messages([self.message()])
         self.sent = True
         self.save()
@@ -76,7 +73,7 @@ class EMail(models.Model):
 
     # connection = None
 
-    sent = models.BooleanField()
+    sent = models.BooleanField(default=False)
     queued = models.DateField(auto_now=True)
 
 
@@ -90,7 +87,6 @@ class EMailAlternative(models.Model):
 
     content = models.TextField()
     mimetype = models.CharField(max_length=200, default= 'text/html')
-
 
 # class EMailAttachment(models.Model):
 #     message = models.ForeignKey(EMail)

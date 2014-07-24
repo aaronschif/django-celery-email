@@ -1,9 +1,11 @@
 from django.core.mail.backends.base import BaseEmailBackend
-from django.core.mail.backends.filebased import EmailBackend
 
 from djcelery_email import tasks
-
 from djcelery_email.models import EMail
+
+from logging import getLogger
+
+log = getLogger(__name__)
 
 
 class CeleryEmailBackend(BaseEmailBackend):
@@ -13,7 +15,6 @@ class CeleryEmailBackend(BaseEmailBackend):
 
     def send_messages(self, email_messages, **kwargs):
         kwargs['_backend_init_kwargs'] = self.init_kwargs
-
         for msg in email_messages:
             x = EMail(message=msg)
             x.save()
