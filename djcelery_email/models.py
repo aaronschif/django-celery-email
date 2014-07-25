@@ -1,8 +1,13 @@
-from django.db import models
-from django.core.mail import EmailMultiAlternatives, get_connection
-from django.conf import settings
+import six
 
-from fields import EmailsListField
+from email.mime.base import MIMEBase
+
+from django.db import models
+from django.core.mail import EmailMultiAlternatives, get_connection, EmailMessage
+from django.conf import settings
+from django.core.files.base import ContentFile
+
+from fields import EmailsListField, EmailHeadersField
 
 
 class EMail(models.Model):
@@ -11,6 +16,7 @@ class EMail(models.Model):
         super(EMail, self).__init__(*args, **kwargs)
 
         if message:
+            assert isinstance(message, EmailMessage)
             self.subject = message.subject
             self.body = message.body
 
@@ -20,6 +26,8 @@ class EMail(models.Model):
 
             self.from_email = message.from_email
 
+            self.extra_headers = message.extra_headers
+
             self.save()
             if hasattr(message, 'alternatives'):
                 for c in message.alternatives:
@@ -28,6 +36,19 @@ class EMail(models.Model):
                     alt.content = c[0]
                     alt.mimetype = c[1]
                     alt.save()
+
+            if hasattr(message, 'attachments'):
+                for c in message.attachments:
+                    if isinstance(c, (tuple, list)) and len(c) is 3:
+                        filename, content, mimetype = c
+                        att = EMailAttachment()
+                        att.message = self
+                        att.filename = filename
+                        att.content = ContentFile(content, filename)
+                        att.mimetype = mimetype
+                        att.save()
+                    elif isinstance(c, MIMEBase):
+                        raise NotImplementedError()
 
     def __unicode__(self):
         return "<'{m.subject}' From: {m.from_email} To: {m.to_emails}>".format(m=self)
@@ -40,8 +61,10 @@ class EMail(models.Model):
         m.from_email = self.from_email
 
         m.alternatives = [(att.content, att.mimetype) for att in self.alternatives()]
+        for attachment in self.attachments():
+            m.attach(attachment.filename, attachment.content.read(), attachment.mimetype)
 
-        #m.extra_headers = self.headers
+        m.extra_headers = self.extra_headers
 
         return m
 
@@ -54,7 +77,7 @@ class EMail(models.Model):
         self.save()
 
     def attachments(self):
-        raise NotImplemented()
+        return EMailAttachment.objects.filter(message=self)
 
     def alternatives(self):
         return EMailAlternative.objects.filter(message=self)
@@ -68,7 +91,7 @@ class EMail(models.Model):
 
     from_email = models.EmailField()
 
-    #headers = models.TextField()
+    extra_headers = EmailHeadersField(blank=True)
 
     # connection = None
 
@@ -83,9 +106,9 @@ class EMailAlternative(models.Model):
     mimetype = models.CharField(max_length=200, default='text/html')
 
 
-# class EMailAttachment(models.Model):
-#     message = models.ForeignKey(EMail)
-#
-#     filename = models.CharField(max_length=200)
-#     content = models.FileField()
-#     mimetype = models.CharField(max_length=200)
+class EMailAttachment(models.Model):
+    message = models.ForeignKey(EMail)
+
+    filename = models.CharField(max_length=200)
+    content = models.FileField(upload_to='djcelery_email')
+    mimetype = models.CharField(max_length=200, blank=True, null=True)

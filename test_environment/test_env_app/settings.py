@@ -29,9 +29,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'test_project_x.urls'
+ROOT_URLCONF = 'test_env_app.urls'
 
-WSGI_APPLICATION = 'test_project_x.wsgi.application'
+WSGI_APPLICATION = 'test_env_app.wsgi.application'
 
 DATABASES = {
     'default': {
