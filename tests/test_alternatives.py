@@ -4,8 +4,8 @@ import pytest
 from django.core.mail import EmailMultiAlternatives, EmailMessage, get_connection
 from django.core import mail
 
-from djcelery_email.backends import CeleryEmailBackend
-from djcelery_email.models import EMail
+from django_stored_email.backends import CeleryEmailBackend
+from django_stored_email.models import EMail
 
 
 @pytest.mark.django_db

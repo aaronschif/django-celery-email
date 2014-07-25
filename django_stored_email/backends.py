@@ -1,7 +1,7 @@
 from django.core.mail.backends.base import BaseEmailBackend
 
-from djcelery_email import tasks
-from djcelery_email.models import EMail
+from django_stored_email import tasks
+from django_stored_email.models import EMail
 
 
 class CeleryEmailBackend(BaseEmailBackend):

@@ -2,9 +2,9 @@ import pytest
 from django.core.mail import get_connection
 from django.core import mail
 
-from djcelery_email.backends import CeleryEmailBackend
-from djcelery_email.models import EMail
-from djcelery_email.tasks import send_email_batch
+from django_stored_email.backends import CeleryEmailBackend
+from django_stored_email.models import EMail
+from django_stored_email.tasks import send_email_batch
 
 
 @pytest.mark.django_db

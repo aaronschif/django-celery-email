@@ -30,10 +30,10 @@ You must then set ``django-celery-email`` as your ``EMAIL_BACKEND``::
 
 By default ``django-celery-email`` will use Django's builtin ``SMTP`` email backend
 for the actual sending of the mail. If you'd like to use another backend, you
-may set it in ``CELERY_EMAIL_BACKEND`` just like you would normally have set
+may set it in ``STORED_EMAIL_BACKEND`` just like you would normally have set
 ``EMAIL_BACKEND`` before you were using Celery. In fact, the normal installation
 procedure will most likely be to get your email working using only Django, then
-change ``EMAIL_BACKEND`` to ``CELERY_EMAIL_BACKEND``, and then add the new
+change ``EMAIL_BACKEND`` to ``STORED_EMAIL_BACKEND``, and then add the new
 ``EMAIL_BACKEND`` setting from above.
 
 If you need to set any of the settings (attributes) you'd normally be able to set on a

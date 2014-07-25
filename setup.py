@@ -12,7 +12,7 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages, Command
 
-import djcelery_email as distmeta
+import django_stored_email as distmeta
 
 
 class RunTests(Command):

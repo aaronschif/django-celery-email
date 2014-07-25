@@ -71,7 +71,7 @@ class EMail(models.Model):
     def send(self, connection=None):
         if not connection:
             connection = get_connection(
-                backend=getattr(settings, 'CELERY_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend'))
+                backend=getattr(settings, 'STORED_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend'))
         connection.send_messages([self.message()])
         self.sent = True
         self.save()
@@ -110,5 +110,5 @@ class EMailAttachment(models.Model):
     message = models.ForeignKey(EMail)
 
     filename = models.CharField(max_length=200)
-    content = models.FileField(upload_to='djcelery_email')
+    content = models.FileField(upload_to='django_stored_email')
     mimetype = models.CharField(max_length=200, blank=True, null=True)

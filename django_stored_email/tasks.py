@@ -3,14 +3,14 @@ from django.core.mail import get_connection
 
 from celery import shared_task
 
-from djcelery_email.models import EMail
+from django_stored_email.models import EMail
 
 
 @shared_task()
 def send_email_batch(batch_size=None):
 
     conn = get_connection(
-        backend=getattr(settings, 'CELERY_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend'))
+        backend=getattr(settings, 'STORED_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend'))
     try:
         conn.open()
         if batch_size:
@@ -27,7 +27,7 @@ def send_email_batch(batch_size=None):
 @shared_task()
 def send_emails(ids):
     conn = get_connection(
-        backend=getattr(settings, 'CELERY_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend'))
+        backend=getattr(settings, 'STORED_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend'))
     emails = [email for email in EMail.objects.filter(id__in=ids)]
 
     try:

@@ -17,7 +17,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     'djcelery',
-    'djcelery_email',
+    'django_stored_email',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -52,8 +52,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
-CELERY_EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+EMAIL_BACKEND = 'django_stored_email.backends.CeleryEmailBackend'
+STORED_EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 CELERY_ALWAYS_EAGER = True
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 BROKER_BACKEND = 'memory'

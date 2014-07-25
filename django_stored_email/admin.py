@@ -1,5 +1,5 @@
 from django.contrib import admin
-from djcelery_email.models import EMail, EMailAlternative
+from django_stored_email.models import EMail, EMailAlternative
 
 
 class EMailAlternativeInline(admin.TabularInline):

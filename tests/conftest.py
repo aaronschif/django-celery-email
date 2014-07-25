@@ -32,8 +32,8 @@ def html_email():
 
 @pytest.fixture(autouse=True)
 def patch_settings(settings, tmpdir):
-    settings.EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
-    settings.CELERY_EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+    settings.EMAIL_BACKEND = 'django_stored_email.backends.CeleryEmailBackend'
+    settings.STORED_EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
     settings.CELERY_ALWAYS_EAGER = True
     settings.CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
     settings.BROKER_BACKEND = 'memory'
