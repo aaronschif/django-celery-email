@@ -13,7 +13,11 @@ from fields import EmailsListField, EmailHeadersField
 class EMail(models.Model):
     def __init__(self, *args, **kwargs):
         message = kwargs.pop('message', None)
+        queue = kwargs.pop('queue', None)
         super(EMail, self).__init__(*args, **kwargs)
+
+        if queue:
+            self.queue = queue
 
         if message:
             assert isinstance(message, EmailMessage)
@@ -97,6 +101,7 @@ class EMail(models.Model):
 
     sent = models.BooleanField(default=False)
     queued = models.DateField(auto_now=True)
+    queue = models.CharField(max_length=200, default='default')
 
 
 class EMailAlternative(models.Model):

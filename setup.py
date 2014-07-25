@@ -47,7 +47,7 @@ else:
 
 
 setup(
-    name='django-celery-email',
+    name='django-stored-email',
     version=distmeta.__version__,
     description=distmeta.__doc__,
     author=distmeta.__author__,
